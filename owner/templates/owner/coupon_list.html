@@ -1,0 +1,72 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Coupon Management</h2>
+    <a href="{% url 'owner_coupon_add' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Coupon
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Description</th>
+                    <th>Discount</th>
+                    <th>Min Purchase</th>
+                    <th>Valid Until</th>
+                    <th>Usage</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                <tr>
+                    <td><strong>{{ coupon.code }}</strong></td>
+                    <td>{{ coupon.description|truncatechars:30 }}</td>
+                    <td>
+                        {% if coupon.discount_type == 'percentage' %}
+                        {{ coupon.discount_value }}%
+                        {% else %}
+                        ₹{{ coupon.discount_value }}
+                        {% endif %}
+                    </td>
+                    <td>₹{{ coupon.min_purchase }}</td>
+                    <td>{{ coupon.valid_until|date:"M d, Y" }}</td>
+                    <td>
+                        {% if coupon.usage_limit > 0 %}
+                        {{ coupon.used_count }}/{{ coupon.usage_limit }}
+                        {% else %}
+                        {{ coupon.used_count }}/∞
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if coupon.is_valid %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Expired</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'owner_coupon_edit' coupon.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'owner_coupon_delete' coupon.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No coupons found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

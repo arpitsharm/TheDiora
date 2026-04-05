@@ -1,0 +1,96 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Order #{{ order.order_number }}</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card p-4 mb-4">
+            <h4>Order Information</h4>
+            <p>
+                <strong>Order Number:</strong> {{ order.order_number }}<br>
+                <strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}<br>
+                <strong>Status:</strong> 
+                {% if order.status == 'pending' %}
+                <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                {% elif order.status == 'processing' %}
+                <span class="badge bg-info">{{ order.get_status_display }}</span>
+                {% elif order.status == 'delivered' %}
+                <span class="badge bg-success">{{ order.get_status_display }}</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                {% endif %}<br>
+                <strong>Payment Method:</strong> {{ order.get_payment_method_display }}
+            </p>
+            
+            <hr>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Update Order Status</label>
+                    <select name="status" class="form-control">
+                        {% for value, label in order.STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Status</button>
+            </form>
+        </div>
+        
+        <div class="card p-4">
+            <h4>Customer Information</h4>
+            <p>
+                <strong>Name:</strong> {{ order.user.get_full_name }}<br>
+                <strong>Email:</strong> {{ order.shipping_email }}<br>
+                <strong>Phone:</strong> {{ order.shipping_phone }}
+            </p>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h4>Shipping Address</h4>
+            <p>
+                {{ order.shipping_first_name }} {{ order.shipping_last_name }}<br>
+                {{ order.shipping_address_line1 }}<br>
+                {% if order.shipping_address_line2 %}{{ order.shipping_address_line2 }}<br>{% endif %}
+                {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zipcode }}
+            </p>
+        </div>
+        
+        <div class="card p-4 mt-4">
+            <h4>Order Total</h4>
+            <h3 class="text-primary">₹{{ order.total_amount }}</h3>
+            {% if order.coupon_code %}
+            <small class="text-success">Coupon applied: {{ order.coupon_code }}</small>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h4 class="mt-4">Order Items</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order_items %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>₹{{ item.price }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.get_total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'owner_orders' %}" class="btn btn-secondary">Back to Orders</a>
+{% endblock %}

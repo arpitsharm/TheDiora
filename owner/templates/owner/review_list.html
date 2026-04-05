@@ -1,0 +1,62 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Review Management</h2>
+    
+    <div class="btn-group">
+        <a href="?approved=" class="btn btn-{% if approved == '' %}primary{% else %}outline-primary{% endif %}">All</a>
+        <a href="?approved=true" class="btn btn-{% if approved == 'true' %}primary{% else %}outline-primary{% endif %}">Approved</a>
+        <a href="?approved=false" class="btn btn-{% if approved == 'false' %}primary{% else %}outline-primary{% endif %}">Pending</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Customer</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                <tr>
+                    <td>{{ review.product.name }}</td>
+                    <td>{{ review.user.get_full_name }}</td>
+                    <td>
+                        {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= review.rating %}⭐{% else %}☆{% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>{{ review.comment|truncatechars:50 }}</td>
+                    <td>{{ review.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        {% if review.approved %}
+                        <span class="badge bg-success">Approved</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'owner_toggle_review' review.id %}" class="btn btn-sm btn-{% if review.approved %}danger{% else %}success{% endif %}">
+                            {% if review.approved %}Disapprove{% else %}Approve{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No reviews found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Owner Dashboard</h2>
+    <div class="d-flex align-items-center">
+        <i class="fas fa-box fa-2x text-primary me-3"></i>
+        <span class="badge bg-primary fs-6">{{ total_orders }} Orders</span>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white" style="background-color: #FFD700;">
+            <div class="card-body">
+                <h5 class="card-title text-white fw-bold">Total Revenue</h5>
+                <h2 class="text-white display-6">₹{{ total_revenue|floatformat:2 }}</h2>
+                <small class="text-white opacity-75">All time earnings</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white" style="background-color: #28A745;">
+            <div class="card-body">
+                <h5 class="card-title text-white fw-bold">Today's Revenue</h5>
+                <h2 class="text-white display-6">₹{{ today_revenue|floatformat:2 }}</h2>
+                <small class="text-white opacity-75">Today's earnings</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title text-white fw-bold">Total Orders</h5>
+                <h2 class="text-white display-6">{{ total_orders }}</h2>
+                <small class="text-white opacity-75">All time orders</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white" style="background-color: #FF6B6B;">
+            <div class="card-body">
+                <h5 class="card-title text-white fw-bold">Pending Reviews</h5>
+                <h2 class="text-white display-6">{{ pending_reviews_count|default:0 }}</h2>
+                <small class="text-white opacity-75">Awaiting approval</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+            <i class="fas fa-list me-2"></i>All Orders
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab">
+            <i class="fas fa-times-circle me-2"></i>Cancelled Orders
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="returned-tab" data-bs-toggle="tab" data-bs-target="#returned" type="button" role="tab">
+            <i class="fas fa-undo me-2"></i>Returned Orders
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+            <i class="fas fa-star me-2"></i>Reviews
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="complaints-tab" data-bs-toggle="tab" data-bs-target="#complaints" type="button" role="tab">
+            <i class="fas fa-exclamation-triangle me-2"></i>Complaints
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="dashboardTabsContent">
+    <!-- All Orders Tab -->
+    <div class="tab-pane fade show active" id="all" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-list me-2"></i>All Orders</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Time Ago</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in all_orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.user.get_full_name|default:order.user.username }}</td>
+                                <td>₹{{ order.total_amount }}</td>
+                                <td>
+                                    {% if order.status == 'pending' %}
+                                    <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'processing' %}
+                                    <span class="badge bg-info">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'delivered' %}
+                                    <span class="badge bg-success">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'cancelled' %}
+                                    <span class="badge bg-danger">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'returned' %}
+                                    <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if order.created_at|timesince %}
+                                        {{ order.created_at|timesince }} ago
+                                        {% else %}
+                                        Just now
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No orders found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancelled Orders Tab -->
+    <div class="tab-pane fade" id="cancelled" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-times-circle me-2"></i>Cancelled Orders</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Cancelled At</th>
+                                <th>Time Ago</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in cancelled_orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.user.get_full_name|default:order.user.username }}</td>
+                                <td>₹{{ order.total_amount }}</td>
+                                <td>{{ order.updated_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if order.updated_at|timesince %}
+                                        {{ order.updated_at|timesince }} ago
+                                        {% else %}
+                                        Just now
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No cancelled orders found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Returned Orders Tab -->
+    <div class="tab-pane fade" id="returned" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-undo me-2"></i>Returned Orders</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Returned At</th>
+                                <th>Time Ago</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in returned_orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.user.get_full_name|default:order.user.username }}</td>
+                                <td>₹{{ order.total_amount }}</td>
+                                <td>{{ order.updated_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if order.updated_at|timesince %}
+                                        {{ order.updated_at|timesince }} ago
+                                        {% else %}
+                                        Just now
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No returned orders found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Tab -->
+    <div class="tab-pane fade" id="reviews" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-star me-2"></i>Pending Reviews</h4>
+            </div>
+            <div class="card-body">
+                {% if pending_reviews %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Customer</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Created</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in pending_reviews %}
+                            <tr>
+                                <td>{{ review.product.name }}</td>
+                                <td>{{ review.user.get_full_name|default:review.user.username }}</td>
+                                <td>
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter0 <= review.rating %}⭐{% else %}{% endif %}
+                                    {% endfor %}
+                                    {{ review.rating }}/5
+                                </td>
+                                <td>{{ review.comment|truncatewords:10 }}</td>
+                                <td>{{ review.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'approve_review' review.id %}" class="btn btn-sm btn-success" onclick="return confirm('Approve this review?')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No pending reviews to approve.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaints Tab -->
+    <div class="tab-pane fade" id="complaints" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-exclamation-triangle me-2"></i>Pending Complaints</h4>
+            </div>
+            <div class="card-body">
+                {% if pending_complaints %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Subject</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Time Ago</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in pending_complaints %}
+                            <tr>
+                                <td>{{ complaint.order.order_number }}</td>
+                                <td>{{ complaint.user.get_full_name|default:complaint.user.username }}</td>
+                                <td>{{ complaint.subject }}</td>
+                                <td>{{ complaint.description|truncatewords:15 }}</td>
+                                <td>{{ complaint.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if complaint.created_at|timesince %}
+                                        {{ complaint.created_at|timesince }} ago
+                                        {% else %}
+                                        Just now
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#complaintModal{{ complaint.id }}">
+                                        <i class="fas fa-reply"></i> Respond
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No pending complaints.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaint Response Modals -->
+{% for complaint in pending_complaints %}
+<div class="modal fade" id="complaintModal{{ complaint.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Respond to Complaint</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'resolve_complaint' complaint.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Order:</strong></label>
+                        <p>{{ complaint.order.order_number }} - {{ complaint.user.get_full_name|default:complaint.user.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Subject:</strong></label>
+                        <p>{{ complaint.subject }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Description:</strong></label>
+                        <p>{{ complaint.description }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="response{{ complaint.id }}" class="form-label">Your Response:</label>
+                        <textarea class="form-control" id="response{{ complaint.id }}" name="response" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Resolve Complaint</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<h2 class="mb-4">{% if coupon %}Edit Coupon{% else %}Add New Coupon{% endif %}</h2>
+
+<div class="card p-4">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Coupon Code</label>
+                    {{ form.code }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Discount Type</label>
+                        {{ form.discount_type }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Discount Value</label>
+                        {{ form.discount_value }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Minimum Purchase ($)</label>
+                    {{ form.min_purchase }}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Valid From</label>
+                        {{ form.valid_from }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Valid Until</label>
+                        {{ form.valid_until }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Usage Limit (0 for unlimited)</label>
+                    {{ form.usage_limit }}
+                </div>
+                
+                <div class="form-check mb-3">
+                    {{ form.is_active }}
+                    <label class="form-check-label">Active</label>
+                </div>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> {% if coupon %}Update Coupon{% else %}Create Coupon{% endif %}
+        </button>
+        <a href="{% url 'owner_coupons' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

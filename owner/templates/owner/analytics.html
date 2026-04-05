@@ -1,0 +1,118 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Analytics & Reports</h2>
+
+<div class="card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4>Select Time Period</h4>
+        <div class="btn-group">
+            <a href="?days=7" class="btn btn-{% if days == 7 %}primary{% else %}outline-primary{% endif %}">7 Days</a>
+            <a href="?days=30" class="btn btn-{% if days == 30 %}primary{% else %}outline-primary{% endif %}">30 Days</a>
+            <a href="?days=90" class="btn btn-{% if days == 90 %}primary{% else %}outline-primary{% endif %}">90 Days</a>
+            <a href="?days=365" class="btn btn-{% if days == 365 %}primary{% else %}outline-primary{% endif %}">1 Year</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5>Total Revenue (Period)</h5>
+                <h2>₹{{ delivered_revenue|floatformat:2 }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5>Total Orders (Period)</h5>
+                <h2>{{ total_orders }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5>Average Order Value</h5>
+                <h2>₹{% widthratio delivered_revenue total_orders 1 %}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Top Selling Products</h4>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Units Sold</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in top_products %}
+                        <tr>
+                            <td>{{ product.product__name }}</td>
+                            <td>{{ product.total_sold }}</td>
+                            <td>₹{{ product.total_revenue|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No sales data yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Orders by Status</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for item in orders_by_status %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ item.status }}
+                        <span class="badge bg-primary rounded-pill">{{ item.count }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center">No data available</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>Payment Methods</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for method in payment_methods %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ method.payment_method }}
+                        <span class="badge bg-primary rounded-pill">{{ method.count }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center">No data available</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

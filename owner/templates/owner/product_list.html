@@ -1,0 +1,112 @@
+{% extends 'owner/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Product Management</h2>
+    <a href="{% url 'owner_product_add' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Product
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Search products..." value="{{ query }}">
+        </div>
+        <div class="col-md-3">
+            <select name="availability" class="form-control">
+                <option value="">All Availability</option>
+                <option value="available">Available</option>
+                <option value="unavailable">Unavailable</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="stock" class="form-control">
+                <option value="">All Stock Levels</option>
+                <option value="low">Low Stock (≤5)</option>
+                <option value="out">Out of Stock</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Promoted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        {% if product.images %}
+                        <img src="{{ product.images.url }}" alt="{{ product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                        {% else %}
+                        <div style="width: 50px; height: 50px;" class="bg-secondary rounded d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image text-white"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.name }}</td>
+                    <td>₹{{ product.price }}</td>
+                    <td>
+                        {% if product.stock_quantity == 0 %}
+                        <span class="badge bg-danger">Out of Stock</span>
+                        {% elif product.stock_quantity <= 5 %}
+                        <span class="badge bg-warning">Low ({{ product.stock_quantity }})</span>
+                        {% else %}
+                        <span class="badge bg-success">{{ product.stock_quantity }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.is_available %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.is_promoted %}
+                        <span class="badge bg-warning">Promoted ⭐</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark">Not Promoted</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'owner_promote_product' product.id %}" class="btn btn-sm btn-{% if product.is_promoted %}warning{% else %}info{% endif %}" title="{% if product.is_promoted %}Remove Promotion{% else %}Promote Product{% endif %}">
+                            {% if product.is_promoted %}<i class="fas fa-star"></i>{% else %}<i class="fas fa-bullhorn"></i>{% endif %}
+                        </a>
+                        <a href="{% url 'owner_product_edit' product.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'owner_product_delete' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No products found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Checkout</h2>
+    
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card p-4 mb-4">
+                    <h4>Shipping Information</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ order_form.shipping_first_name.label_tag }}
+                            {{ order_form.shipping_first_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ order_form.shipping_last_name.label_tag }}
+                            {{ order_form.shipping_last_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ order_form.shipping_email.label_tag }}
+                        {{ order_form.shipping_email }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ order_form.shipping_phone.label_tag }}
+                        {{ order_form.shipping_phone }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ order_form.shipping_address_line1.label_tag }}
+                        {{ order_form.shipping_address_line1 }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ order_form.shipping_address_line2.label_tag }}
+                        {{ order_form.shipping_address_line2 }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ order_form.shipping_city.label_tag }}
+                            {{ order_form.shipping_city }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ order_form.shipping_state.label_tag }}
+                            {{ order_form.shipping_state }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ order_form.shipping_zipcode.label_tag }}
+                            {{ order_form.shipping_zipcode }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        {{ order_form.billing_same_as_shipping }}
+                        {{ order_form.billing_same_as_shipping.label }}
+                    </div>
+                </div>
+                
+                <div class="card p-4">
+                    <h4>Payment Method</h4>
+                    {{ order_form.payment_method }}
+                    <small class="text-muted d-block mt-2">
+                        Note: Online payment integration will be available soon. Currently only Cash on Delivery is supported.
+                    </small>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h4>Order Summary</h4>
+                    <hr>
+                    
+                    {% for item in cart.items.all %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <span>₹{{ item.get_total }}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong>₹{{ subtotal }}</strong>
+                    </div>
+                    
+                    {% if discount > 0 %}
+                    <div class="d-flex justify-content-between mb-2 text-success">
+                        <span>Discount:</span>
+                        <strong>-₹{{ discount }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Total:</h5>
+                        <h5 class="text-primary">₹{{ total }}</h5>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
